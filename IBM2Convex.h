@@ -1,20 +1,27 @@
 #ifndef IBM2CONVEX_H
 #define IBM2CONVEX_H
 
+#include <iterator>
+#include <functional>
+#include <set>
+#include <numeric>
 #include <utility>
+#include <ctime>
 #include "IBM1.h"
+#include "UsefulFunctions.h"
 
-class IBM2Convex: public IBM1
+class IBM2Convex: public AlignmentCorpus
 {
 public:
-  IBM2Convex(string file_name, string initialization_type = "ibm1", double lambda = .001, double c = .02, double alpha = 1, double theta = .5);
+  IBM2Convex(string file_name, string initialization_type = "ibm1", double block_percentage = .05, double lambda = .001, double c = .02, int total_iterations = 10, double alpha = 1, double theta = .5);
   void write_alignments(string file_name);
   void print();
-  double compute_objective(unordered_map<string, unordered_map<string, double> > &, unordered_map<int, unordered_map<int, double> > &);
+  double compute_objective(vector<vector<double> > &, vector<vector<double> > &);
   void optimize_seg();
   void check_for_zero_gradients();
   
   int iteration_number_;
+  int total_iterations_;
   int N_;
   string initialization_type_;
   double learning_rate_;
@@ -29,23 +36,26 @@ public:
   int B_; // The block_size_.
   int to_compute_objective_counter_;
 
-  
-  unordered_map < int, unordered_map< int, double > > d_var_;
-  unordered_map < string, unordered_map< string, double > > t_var_average_;
-  unordered_map < int, unordered_map< int, double > > d_var_average_;
-  unordered_map < string, unordered_map< string, double > > t_var_best_overall_;
-  unordered_map < int, unordered_map< int, double > > d_var_best_overall_;
-  unordered_map < string, unordered_map< string, double > > t_var_gradients_;
-  unordered_map < int, unordered_map< int, double > > d_var_gradients_;
+  vector<vector<double> > t_var_;
+  vector<vector<double> > d_var_;
+  vector<vector<double> > t_var_average_;
+  vector<vector<double> > d_var_average_;
+  vector<vector<double> > t_var_best_overall_;
+  vector<vector<double> > d_var_best_overall_;
 
-  unordered_set < pair<int,int> > d_var_gradients_changed_;
-  unordered_set < pair<string,string> > t_var_gradients_changed_;
+  vector<vector<double> > t_var_gradients_;
+  vector<vector<double> > d_var_gradients_;
 
-protected:
+  unordered_map<int, unordered_map<int, int> > t_var_lookup_;
+  unordered_set<pair<int,int> > d_var_gradients_changed_;
+  unordered_set<pair<int,int> > t_var_gradients_changed_;
+
   double lambda_;
   double alpha_;
   double c_;
   double theta_;
+
+protected:
   size_t max_source_sentence_length_;
   size_t max_target_sentence_length_;
   void get_max_sentence_length();
